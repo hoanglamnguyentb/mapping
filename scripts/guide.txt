@@ -1,0 +1,1 @@
+npx ts-node -P tsconfig.scripts.json scripts/generateMapping.ts
