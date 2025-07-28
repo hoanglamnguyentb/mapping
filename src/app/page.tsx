@@ -52,12 +52,14 @@ export default function AddressConverter() {
 
       {output && (
         <Alert
-          message="Success Text"
+          message={
+            <>
+              <PushpinOutlined /> <span>Địa chỉ mới:</span>
+            </>
+          }
           description={
             <>
-              <Paragraph strong>
-                <PushpinOutlined /> Địa chỉ mới:
-              </Paragraph>
+              <Paragraph strong></Paragraph>
               <Paragraph>{output}</Paragraph>
             </>
           }
