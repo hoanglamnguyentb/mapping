@@ -117,7 +117,8 @@ export default function Home() {
     }
     setDownloading(true);
     try {
-      const ws = XLSX.utils.json_to_sheet(filteredData);
+      const exportData = filteredData.map(({ id, ...rest }) => rest);
+      const ws = XLSX.utils.json_to_sheet(exportData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
       const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
