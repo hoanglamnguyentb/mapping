@@ -4,27 +4,25 @@ export function convertAddress(input: string, mapping: AddressMapping): string {
   let result = input;
 
   for (const [newLevel1, config] of Object.entries(mapping)) {
-    // Nếu địa chỉ có chứa tên tỉnh/thành cũ (alias) thì mới áp dụng
+    // Kiểm tra xem input có chứa alias tỉnh/thành (không phân biệt hoa thường)
     const matched = config.level1_aliases.some((alias) =>
-      input.includes(alias)
+      result.toLowerCase().includes(alias.toLowerCase())
     );
     if (!matched) continue;
 
-    // Áp dụng mapping cấp xã/phường cho đúng tỉnh/thành
+    // Thay level2 (xã/phường) - ưu tiên chuỗi dài hơn trước
     const sortedLevel2 = Object.keys(config.level2s).sort(
       (a, b) => b.length - a.length
     );
     for (const old of sortedLevel2) {
-      if (result.includes(old)) {
-        result = result.replace(old, config.level2s[old]);
-      }
+      const regex = new RegExp(old, 'gi');
+      result = result.replace(regex, config.level2s[old]);
     }
 
-    // Thay tên tỉnh/thành nếu có
+    // Thay level1 (tỉnh/thành)
     for (const alias of config.level1_aliases) {
-      if (result.includes(alias)) {
-        result = result.replace(alias, newLevel1);
-      }
+      const regex = new RegExp(alias, 'gi');
+      result = result.replace(regex, newLevel1);
     }
   }
 
@@ -32,21 +30,29 @@ export function convertAddress(input: string, mapping: AddressMapping): string {
 }
 
 export function removeDistrictParts(address: string): string {
-  const parts = address.split(',').map((p) => p.trim());
-  const removeKeywords = ['Quận', 'Huyện', 'Thị xã', 'Thành phố trực thuộc'];
-  let seenFirstCity = false;
+  const parts = address.split(/\s*[-,_]\s*/).map((p) => p.trim());
+  console.log('Part', parts);
+  const removeKeywords = ['quận', 'huyện', 'thị xã', 'thành phố trực thuộc'];
+
+  // Tìm tất cả phần có "thành phố" (không phân biệt hoa thường)
+  const cityParts = parts.filter((p) =>
+    p.toLowerCase().startsWith('thành phố')
+  );
+  let removedFirstCity = false;
 
   const result = parts.filter((part) => {
+    const lower = part.toLowerCase();
+
     // Bỏ các phần bắt đầu bằng Quận, Huyện, ...
-    if (removeKeywords.some((kw) => part.startsWith(kw))) {
+    if (removeKeywords.some((kw) => lower.startsWith(kw))) {
       return false;
     }
 
-    // Với "Thành phố ..."
-    if (part.startsWith('Thành phố')) {
-      if (!seenFirstCity) {
-        seenFirstCity = true;
-        return false; // Bỏ thành phố đầu tiên
+    // Bỏ thành phố đầu tiên nếu có nhiều hơn 1 phần bắt đầu bằng "Thành phố"
+    if (lower.startsWith('thành phố')) {
+      if (cityParts.length > 1 && !removedFirstCity) {
+        removedFirstCity = true;
+        return false;
       }
     }
 
