@@ -1,15 +1,18 @@
-import { Layout } from 'antd';
+import '@ant-design/v5-patch-for-react-19';
+import { ConfigProvider, Layout } from 'antd';
+import viVN from 'antd/locale/vi_VN';
 import React from 'react';
-import './globals.css';
 import AppHeader from './components/AppHeader';
 import AppFooter from './components/AppFooter';
 import { Content } from 'antd/es/layout/layout';
 import { Metadata } from 'next';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Chuyển đổi địa chỉ hành chính sau sáp nhập',
   description:
-    'Công cụ chuyển đổi địa chỉ hành chính theo dữ liệu sáp nhập mới nhất tại Việt Nam.',
+    'Công cụ chuyển đổi địa chỉ hành chính theo dữ liệu sáp nhập mới nhất.',
 };
 
 export default function RootLayout({
@@ -25,32 +28,34 @@ export default function RootLayout({
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
         />
-        <title>{process.env.NEXT_PUBLIC_HEADER_TITLE}</title>
         <link rel="icon" type="image/x-icon" href="/images/icon.png" />
       </head>
       <body>
-        <div className="App min-h-screen">
-          <Layout>
-            <AppHeader></AppHeader>
-            <Content
-              style={{
-                padding: '0 48px',
-                minHeight: 'calc(100vh - 133px)',
-              }}
-            >
-              <div
-                style={{
-                  padding: 24,
-                  borderRadius: 4,
-                }}
-              >
-                {children}
-              </div>
-            </Content>
-            <AppFooter></AppFooter>
-          </Layout>
-          {/* <ConfigProvider locale={viVN}>{children}</ConfigProvider> */}
-        </div>
+        <AntdRegistry>
+          <ConfigProvider locale={viVN}>
+            <div className="App min-h-screen">
+              <Layout>
+                <AppHeader />
+                <Content
+                  style={{
+                    padding: '0 48px',
+                    minHeight: 'calc(100vh - 133px)',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: 24,
+                      borderRadius: 4,
+                    }}
+                  >
+                    {children}
+                  </div>
+                </Content>
+                <AppFooter />
+              </Layout>
+            </div>
+          </ConfigProvider>
+        </AntdRegistry>
       </body>
     </html>
   );

@@ -3,8 +3,8 @@
 import { AddressMapping } from '@/types/address';
 import { convertAddress, removeDistrictParts } from '@/utils/address';
 import { copyToClipboard } from '@/utils/copyToClipboard';
-import { CopyOutlined, PushpinOutlined, RedoOutlined } from '@ant-design/icons';
-import { Alert, Button, Input, message, Tooltip, Typography } from 'antd';
+import { CopyOutlined, SwapOutlined } from '@ant-design/icons';
+import { Alert, Button, Input, Tooltip, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 
 const { TextArea } = Input;
@@ -54,7 +54,7 @@ export default function AddressConverter() {
           type="primary"
           onClick={handleConvert}
           className="!my-2"
-          icon={<RedoOutlined />}
+          icon={<SwapOutlined />}
         >
           Chuyển đổi
         </Button>

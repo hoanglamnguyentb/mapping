@@ -1,12 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Upload, Button, Table, message, Typography, Space } from 'antd';
+import { Upload, Button, Table, message, Typography, Space, Input } from 'antd';
 import type { UploadProps } from 'antd';
 import { UploadOutlined, DownloadOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { convertAddress, removeDistrictParts } from '@/utils/address';
 import { AddressMapping } from '@/types/address';
+import { removeVietnameseTones } from '@/utils/string';
 
 interface AddressRow {
   [key: string]: string | undefined;
@@ -16,12 +17,22 @@ const { Title } = Typography;
 
 export default function Home() {
   const [mapping, setMapping] = useState<AddressMapping>({});
+  const [searchText, setSearchText] = useState('');
   const [data, setData] = useState<AddressRow[]>([]);
   const [uploading, setUploading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [columns, setColumns] = useState<
     { title: string; dataIndex: string; key: string }[]
   >([]);
+
+  const filteredData = data.filter((row) =>
+    Object.values(row).some((value) => {
+      const val = (value || '').toString();
+      return removeVietnameseTones(val)
+        .toLowerCase()
+        .includes(removeVietnameseTones(searchText).toLowerCase());
+    })
+  );
 
   useEffect(() => {
     fetch('/mapping.json')
@@ -43,7 +54,6 @@ export default function Home() {
   };
 
   const handleExcel = async (file: File) => {
-    message.success('HELLO');
     setUploading(true);
     try {
       const data = await file.arrayBuffer();
@@ -59,13 +69,14 @@ export default function Home() {
         return;
       }
 
-      const updated = json.map((row) => {
+      const updated = json.map((row, index) => {
         const oldAddr = row[addrCol] || '';
         const converted = convertAddress(oldAddr, mapping);
         const cleaned = removeDistrictParts(converted);
 
         return {
           ...row,
+          id: index.toString(),
           'Địa chỉ mới': cleaned,
         };
       });
@@ -86,7 +97,7 @@ export default function Home() {
 
       setColumns(cols);
       setData(updated);
-      message.success('📄 File đọc thành công!');
+      message.success('Đọc dữ liệu thành công!');
     } catch (err) {
       console.error('Lỗi khi xử lý file Excel:', err);
       message.error('Đã xảy ra lỗi khi đọc file Excel.');
@@ -98,19 +109,19 @@ export default function Home() {
   };
 
   const handleExport = () => {
-    if (data.length === 0) {
+    if (filteredData.length === 0) {
       message.warning('Chưa có dữ liệu để xuất.');
       return;
     }
     setDownloading(true);
     try {
-      const ws = XLSX.utils.json_to_sheet(data);
+      const ws = XLSX.utils.json_to_sheet(filteredData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
       const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
       const blob = new Blob([buffer], { type: 'application/octet-stream' });
       saveAs(blob, 'dia-chi-moi.xlsx');
-      message.success('Xuất file thành công!');
+      message.success('Xuất file Excel thành công!');
     } catch (err) {
       console.error('Lỗi khi xuất file:', err);
       message.error('Đã xảy ra lỗi khi xuất file Excel.');
@@ -133,15 +144,26 @@ export default function Home() {
       <div className="text-center my-2">
         <Space>
           {data.length > 0 && (
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={handleExport}
-              variant="outlined"
-              color="cyan"
-              loading={downloading}
-            >
-              Xuất file Excel kết quả
-            </Button>
+            <>
+              <div className="my-4 text-center">
+                <Input.Search
+                  allowClear
+                  placeholder="Tìm kiếm trong bảng..."
+                  style={{ maxWidth: 400 }}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  value={searchText}
+                />
+              </div>
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={handleExport}
+                variant="outlined"
+                color="cyan"
+                loading={downloading}
+              >
+                Xuất file Excel kết quả
+              </Button>
+            </>
           )}
           <Upload {...props}>
             <Button
@@ -156,7 +178,7 @@ export default function Home() {
         </Space>
       </div>
       {data.length == 0 && (
-        <div className="text-center">
+        <div className="text-center mt-4 text-gray-500">
           Vui lòng đặt tiêu đề cột chứa địa chỉ là{' '}
           <span className="font-semibold">Địa chỉ</span> hoặc{' '}
           <span className="font-semibold">Address</span> để hệ thống xử lý chính
@@ -165,13 +187,12 @@ export default function Home() {
       )}
 
       {data.length > 0 && (
-        <>
+        <div className="shadow-lg border-0">
           <Table
-            dataSource={data}
+            size="small"
+            dataSource={filteredData}
             columns={columns}
-            rowKey={(record, idx) =>
-              idx !== undefined ? idx.toString() : Math.random().toString()
-            }
+            rowKey="id"
             scroll={{ x: true }}
             pagination={{
               showTotal: (total) => (
@@ -180,9 +201,11 @@ export default function Home() {
                   ghi
                 </>
               ),
+              size: 'small',
+              className: 'px-2',
             }}
           />
-        </>
+        </div>
       )}
     </div>
   );

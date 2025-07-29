@@ -6,7 +6,7 @@ import React from 'react';
 const AppFooter = () => {
   return (
     <Footer style={{ textAlign: 'center' }}>
-      ©{new Date().getFullYear()} hoanglamnguyentb@gmail.com
+      ©{new Date().getFullYear()} hoanglamnguyentb@gmail.com return{' '}
     </Footer>
   );
 };
