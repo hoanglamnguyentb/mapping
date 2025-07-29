@@ -49,13 +49,8 @@ export default function AddressConverter() {
         className="!mb-0"
       />
 
-      <div className="text-center">
-        <Button
-          type="primary"
-          onClick={handleConvert}
-          className="!my-2"
-          icon={<SwapOutlined />}
-        >
+      <div className="text-center my-4">
+        <Button type="primary" onClick={handleConvert} icon={<SwapOutlined />}>
           Chuyển đổi
         </Button>
       </div>

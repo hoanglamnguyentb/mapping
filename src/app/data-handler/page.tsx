@@ -88,11 +88,13 @@ export default function Home() {
           key: 'stt',
           render: (_: unknown, __: AddressRow, index: number) => index + 1,
         },
-        ...Object.keys(updated[0] || {}).map((key) => ({
-          title: key,
-          dataIndex: key,
-          key,
-        })),
+        ...Object.keys(updated[0] || {})
+          .filter((key) => key !== 'id')
+          .map((key) => ({
+            title: key,
+            dataIndex: key,
+            key,
+          })),
       ];
 
       setColumns(cols);
@@ -138,22 +140,20 @@ export default function Home() {
 
   return (
     <div className="p-6">
-      <div className="uppercase font-semibold text-xl bg-gradient-to-r from-blue-500 to-blue-200 bg-clip-text text-transparent mb-3 text-center">
+      <div className="uppercase font-semibold text-xl bg-gradient-to-r from-blue-500 to-blue-200 bg-clip-text text-transparent text-center">
         Chuyển đổi địa chỉ hành chính từ Excel
       </div>
-      <div className="text-center my-2">
+      <div className="text-center my-4">
         <Space>
           {data.length > 0 && (
             <>
-              <div className="my-4 text-center">
-                <Input.Search
-                  allowClear
-                  placeholder="Tìm kiếm trong bảng..."
-                  style={{ maxWidth: 400 }}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  value={searchText}
-                />
-              </div>
+              <Input.Search
+                allowClear
+                placeholder="Tìm kiếm trong bảng..."
+                style={{ maxWidth: 400 }}
+                onChange={(e) => setSearchText(e.target.value)}
+                value={searchText}
+              />
               <Button
                 icon={<DownloadOutlined />}
                 onClick={handleExport}
@@ -202,7 +202,7 @@ export default function Home() {
                 </>
               ),
               size: 'small',
-              className: 'px-2',
+              className: '!mx-3',
             }}
           />
         </div>
