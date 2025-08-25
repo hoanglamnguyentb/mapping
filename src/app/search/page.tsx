@@ -4,7 +4,7 @@ import { AddressMapping } from '@/types/address';
 import { convertAddress, removeDistrictParts } from '@/utils/address';
 import { copyToClipboard } from '@/utils/copyToClipboard';
 import { CopyOutlined, SwapOutlined } from '@ant-design/icons';
-import { Alert, Button, Input, Tooltip, Typography } from 'antd';
+import { Alert, Button, Input, message, Tooltip, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 
 const { TextArea } = Input;

@@ -30,25 +30,40 @@ export function convertAddress(input: string, mapping: AddressMapping): string {
 }
 
 export function removeDistrictParts(address: string): string {
-  const parts = address.split(/\s*[-,_]\s*/).map((p) => p.trim());
-  console.log('Part', parts);
+  // 1. Chọn ký tự phân tách xuất hiện nhiều nhất
+  const separators = ['-', ',', '_'];
+  const counts = separators.map((sep) => ({
+    sep,
+    count: address.split(sep).length - 1,
+  }));
+  const maxCount = Math.max(...counts.map((c) => c.count));
+  const mainSep = counts.find((c) => c.count === maxCount)?.sep || '-';
+
+  // 2. Split địa chỉ theo dấu chính
+  const parts = address
+    .split(new RegExp(`\\s*${mainSep}\\s*`))
+    .map((p) => p.trim());
+
+  // 3. Xác định các phần cần loại bỏ
   const removeKeywords = ['quận', 'huyện', 'thị xã', 'thành phố trực thuộc'];
 
-  // Tìm tất cả phần có "thành phố" (không phân biệt hoa thường)
+  // Tìm tất cả phần bắt đầu bằng "thành phố" (không phân biệt hoa thường)
   const cityParts = parts.filter((p) =>
     p.toLowerCase().startsWith('thành phố')
   );
+
   let removedFirstCity = false;
 
+  // 4. Lọc các phần theo điều kiện
   const result = parts.filter((part) => {
     const lower = part.toLowerCase();
 
-    // Bỏ các phần bắt đầu bằng Quận, Huyện, ...
+    // Loại bỏ các phần bắt đầu bằng từ khóa
     if (removeKeywords.some((kw) => lower.startsWith(kw))) {
       return false;
     }
 
-    // Bỏ thành phố đầu tiên nếu có nhiều hơn 1 phần bắt đầu bằng "Thành phố"
+    // Loại bỏ "thành phố" đầu tiên nếu có nhiều hơn 1 phần
     if (lower.startsWith('thành phố')) {
       if (cityParts.length > 1 && !removedFirstCity) {
         removedFirstCity = true;
@@ -59,5 +74,6 @@ export function removeDistrictParts(address: string): string {
     return true;
   });
 
+  // 5. Join lại các phần còn lại
   return result.join(', ');
 }
